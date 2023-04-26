@@ -91,8 +91,8 @@ if __name__ == '__main__':
             if args.metrics:
                 ar = Archive(os.path.join(base_dir, "data"))
                 
-                for nlp_doc, ds_doc in zip(nlp.pipe(doc[0] for doc in ds), ds):
-                                     
+                for nlp_doc, ds_doc in zip(nlp.pipe((doc[0] for doc in ds), batch_size=16), ds):
+                                
                     analyzer = Analyzer(ds_doc[0], ds_doc[1], nlp_doc, counter)
                     meta = analyzer.go()
                     stats['documents'] += 1                        
