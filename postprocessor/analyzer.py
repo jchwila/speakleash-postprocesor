@@ -4,12 +4,13 @@ import textstat
 
 class Analyzer(object):
 
-    def __init__(self, txt, meta, nlp, index):
+    AVG_METRICS_DEF = ['avg_word_length', 'avg_sentence_length', 'noun_ratio', 'verb_ratio', 'adj_ratio', 'lexical_density', 'gunning_fog']
+
+    def __init__(self, txt, meta, doc, index):
         textstat.set_lang('pl')
         self.txt = txt
         self.meta = meta
-        self.nlp = nlp
-        self.nlp.max_length = len(txt) + 100
+        self.doc = doc
         self.index = index
 
     def go(self):
@@ -22,7 +23,7 @@ class Analyzer(object):
 
         new_meta = self.meta
 
-        doc = self.nlp(self.txt)
+                
         words = 0
         verbs = 0
         nouns = 0
@@ -30,20 +31,20 @@ class Analyzer(object):
         symbols = 0
         stopwords = 0
         oovs = 0
-        adjecives = 0
+        adjectives = 0
         adverbs = 0
         avg_word_length = 0
         avg_sentence_length = 0
         sentences = 0
-        noun_freq = 0
-        verb_freq = 0
-        adj_freq = 0
+        noun_ratio = 0
+        verb_ratio = 0
+        adj_ratio = 0
         lexical_density = 0
         gunning_fog = 0
         uniq_words = set()
-        words_list = []
+        
 
-        for token in doc:
+        for token in self.doc:
             if not token.is_punct and not token.is_stop and not token.is_space:
                 if token.is_oov and not token.pos_ == "SYM":
                     oovs +=1
@@ -54,7 +55,7 @@ class Analyzer(object):
                     verbs += 1
                     uniq_words.add(token.lemma_)
                 elif token.pos_ == "ADJ":
-                    adjecives += 1
+                    adjectives += 1
                     uniq_words.add(token.lemma_)
                 elif token.pos_ == "ADV":
                     adverbs += 1
@@ -68,9 +69,9 @@ class Analyzer(object):
                 punctuations += 1
             elif not token.is_space and not token.pos_ == "SYM":
                 words += 1
-                words_list.append(token.lemma_)
+                
 
-        for sentence in doc.sents:
+        for sentence in self.doc.sents:
             avg_sentence_length += len(sentence)
             sentences += 1
 
@@ -85,26 +86,26 @@ class Analyzer(object):
             avg_word_length = 0
 
         if words > 0:
-            noun_freq = nouns / words
+            noun_ratio = nouns / words
         else:
-            noun_freq = 0
+            noun_ratio = 0
 
         if words > 0:
-            verb_freq = verbs / words
+            verb_ratio = verbs / words
         else:
-            verb_freq = 0   
+            verb_ratio = 0   
 
         if words > 0:
-            adj_freq = adjecives / words
+            adj_ratio = adjectives / words
         else:
-            adj_freq = 0
+            adj_ratio = 0
 
-        if len(words_list) > 0:
-            lexical_density = len(uniq_words) / len(words_list)
+        if words > 0:
+            lexical_density = len(uniq_words) / words
         else:
             lexical_density = 0
 
-        if len(words_list) > 0:
+        if words > 0:
             gunning_fog = textstat.gunning_fog(self.txt)
 
 
@@ -115,22 +116,22 @@ class Analyzer(object):
         new_meta["verbs"] = verbs
         new_meta["nouns"] = nouns
         new_meta["adverbs"] = adverbs
-        new_meta["adjecives"] = adjecives
+        new_meta["adjectives"] = adjectives
         new_meta["punctuations"] = punctuations
         new_meta["symbols"] = symbols
         new_meta["stopwords"] = stopwords
         new_meta["oovs"] = oovs
         new_meta["avg_word_length"] = avg_word_length
-        new_meta["noun_freq"] = noun_freq
-        new_meta["verb_freq"] = verb_freq
-        new_meta["adj_freq"] = adj_freq
+        new_meta["noun_ratio"] = noun_ratio
+        new_meta["verb_ratio"] = verb_ratio
+        new_meta["adj_ratio"] = adj_ratio
         new_meta["lexical_density"] = lexical_density
         new_meta["gunning_fog"] = gunning_fog
 
 
         d = datetime.now() - t1
-        elapsed = round(d.microseconds / 1000)
-        log("Processing document (" + str(elapsed) + " ms): " + str(self.index+1) + " " + name, "INFO")
+        elapsed = d.total_seconds()
+        log("Processing document (" + str(elapsed) + " s): " + str(self.index+1) + " " + name, "INFO")
 
         return new_meta
 
