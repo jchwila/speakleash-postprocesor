@@ -100,13 +100,13 @@ if __name__ == '__main__':
                     for key in meta.keys():
                         if not isinstance(meta[key], str):
                             stats[key] = stats.setdefault(key, 0) + meta[key]
-                    ar.add_data(txt, meta = meta)                
+                    ar.add_data(ds_doc[0], meta = meta)                
 
                     
 
                     if args.sample:
                         if counter < 5:
-                            sample.append({"text": txt, "meta": meta})
+                            sample.append({"text": ds_doc[0], "meta": meta})
             
                         if counter == 4:
                             with open(os.path.join(base_dir, sample_dir, d.name + ".sample"), "w", encoding = "utf-8") as f:
